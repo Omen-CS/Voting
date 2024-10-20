@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
+    <title>Pemilihan Ketua Karang Taruna</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            text-align: center;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .candidates {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 20px;
+        }
+
+        .candidate {
+            background: #e7e7e7;
+            border-radius: 10px;
+            padding: 10px;
+            text-align: center;
+            transition: transform 0.2s;
+        }
+
+        .candidate img {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+        }
+
+        .candidate:hover {
+            transform: scale(1.05);
+        }
+
+        button {
+            margin-top: 10px;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            background-color: #4CAF50;
+            color: white;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Pemilihan Ketua Karang Taruna</h1>
+        <div class="candidates">
+            <div class="candidate">
+                <img src="econ.jpg" alt="Kandidat 1">
+                <h2>Econ</h2>
+                <button onclick="vote(0)">Pilih</button>
+            </div>
+            <div class="candidate">
+                <img src="wisnu.jpg" alt="Kandidat 2">
+                <h2>Wisnu</h2>
+                <button onclick="vote(1)">Pilih</button>
+            </div>
+            <div class="candidate">
+                <img src="tedi.jpg" alt="Kandidat 3">
+                <h2>Tedi</h2>
+                <button onclick="vote(2)">Pilih</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let web3;
+        const contractAddress = '0xb82a12f76d19Bb8B4d2EDE1Ad282AEdEb8a2b354'; // Ganti dengan alamat kontrak Anda
+        const contractABI = [
+	{
+		"inputs": [],
+		"name": "endVoting",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "startVoting",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "string[]",
+				"name": "candidateNames",
+				"type": "string[]"
+			}
+		],
+		"stateMutability": "nonpayable",
+		"type": "constructor"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "candidateIndex",
+				"type": "uint256"
+			}
+		],
+		"name": "vote",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "admin",
+		"outputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"name": "candidates",
+		"outputs": [
+			{
+				"internalType": "string",
+				"name": "name",
+				"type": "string"
+			},
+			{
+				"internalType": "uint256",
+				"name": "voteCount",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "getCandidates",
+		"outputs": [
+			{
+				"components": [
+					{
+						"internalType": "string",
+						"name": "name",
+						"type": "string"
+					},
+					{
+						"internalType": "uint256",
+						"name": "voteCount",
+						"type": "uint256"
+					}
+				],
+				"internalType": "struct KarangTarunaVoting.Candidate[]",
+				"name": "",
+				"type": "tuple[]"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "candidateIndex",
+				"type": "uint256"
+			}
+		],
+		"name": "getVoteCount",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"name": "hasVoted",
+		"outputs": [
+			{
+				"internalType": "bool",
+				"name": "",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "votingActive",
+		"outputs": [
+			{
+				"internalType": "bool",
+				"name": "",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	}
+]; // Ganti dengan ABI kontrak Anda
+        let contract;
+
+        async function initWeb3() {
+            if (window.ethereum) {
+                web3 = new Web3(window.ethereum);
+                try {
+                    await window.ethereum.request({ method: 'eth_requestAccounts' });
+                    console.log('MetaMask Connected');
+                } catch (error) {
+                    console.error('User denied account access:', error);
+                }
+            } else {
+                console.error('MetaMask is not installed!');
+            }
+        }
+
+        async function initContract() {
+            contract = new web3.eth.Contract(contractABI, contractAddress);
+        }
+
+        async function vote(candidateIndex) {
+            const accounts = await web3.eth.getAccounts();
+            try {
+                await contract.methods.vote(candidateIndex).send({ from: accounts[0] });
+                alert("Anda telah memberikan suara untuk kandidat dengan indeks: " + candidateIndex);
+            } catch (error) {
+                console.error("Error saat memberikan suara:", error);
+                alert("Terjadi kesalahan saat memberikan suara. Silakan coba lagi.");
+            }
+        }
+
+        window.onload = async () => {
+            await initWeb3();
+            await initContract();
+        };
+    </script>
+</body>
+</html>
